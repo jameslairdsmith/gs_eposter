@@ -1,0 +1,195 @@
+---
+title: "Introducing {gs}"
+output: 
+  flexdashboard::flex_dashboard:
+    navbar:
+      - { title: "Learn more at the {gs} pkgdown site", 
+          href: "https://jameslairdsmith.github.io/gs", 
+          align: right }
+---
+
+<style type="text/css">
+
+.sbframe-commentary{ 
+      font-size: 20px;
+}
+
+.sourceCode{ 
+      font-size: 18px;
+}
+
+pre code{ 
+      font-size: 18px;
+}
+
+.storyboard-nav .sbframelist ul li {
+
+  font-size: 20px;
+}
+
+.navbar-collapse {
+  
+  font-size: 18px;
+}
+
+.navbar-brand {
+  
+  font-size: 18px;
+}
+  
+</style>
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(gs)
+library(lubridate)
+library(magrittr)
+```
+
+About {gs}{.sidebar}
+=====================================
+
+### About {gs}
+
+`gs` is a grammar of recurring calendar events, implemented as an R package. 
+It enables users to easily create and work with schedules, even in cases when 
+the pattern of events is irregular. 
+
+`gs` does this by providing a set of simple to understand functions for making 
+schedules along with functions for combining them to form more complex ones.
+
+The `gs` grammar is both flexible and declarative. The flexibility allows users 
+to compose arbitrarily complex schedules from simple and intuitive buildings 
+blocks. Because the grammar is declarative, the user need not concern 
+themselves with the details of how a particular schedule works, rather they 
+can specify what they want from a schedule and let gs implement it for them.
+
+### About me
+
+My name is James Laird-Smith and I am a data analyst at the Financial Times in
+London.
+
+Simple examples {.storyboard}
+=========================================
+
+### Weekly until fixed date
+
+```{r eval=FALSE, include=TRUE, echo=TRUE}
+library(gs)
+library(lubridate)
+library(magrittr)
+```
+
+```{r}
+options(width=15)
+```
+
+
+```{r eval=TRUE, include=TRUE, echo=TRUE}
+on_every("week", starting = ymd("1997-09-02")) %>% 
+  only_occur(before(ymd("1997-12-24"))) %>% 
+  schedule_days(during = 1997)
+```
+
+***
+
+Weekly until December 24, 1997
+
+
+### Every other week {data-commentary-width=500}
+
+```{r eval=TRUE, include=TRUE, echo=TRUE}
+on_every_second("week", starting = ymd("1997-09-02")) %>% 
+  schedule_days(from = 1997, to = 1998)
+```
+
+***
+
+Every other week - forever:
+
+Advanced examples {.storyboard}
+=========================================
+
+### Weekly on Tuesday and Thursday for five weeks:
+
+```{r eval=TRUE, include=TRUE, echo=TRUE}
+on_wday("Tue", "Thu") %>% 
+  only_occur(on_or_after(ymd("1997-09-02"))) %>% 
+  schedule_days(to = ymd("1997-09-02") + weeks(5))
+```
+
+### Every other week on Monday, Wednesday, and Friday
+
+```{r eval=TRUE, include=TRUE, echo=TRUE}
+in_every_second("week", starting = ymd("1997-09-01")) %>% 
+  only_occur(on_or_before(ymd("1997-12-24"))) %>% 
+  schedule_days(during = 1997)
+```
+
+
+Holidays {.storyboard}
+=========================================
+
+### U.S. Independence Day {data-commentary-width=500}
+
+```{r eval=TRUE, include=TRUE, echo=TRUE}
+on_us_independence_day <- 
+  only_occur(on_mday(4), 
+             in_month("July"))
+
+on_us_independence_day %>% 
+  schedule_days(from = 2020, to = 2025)
+```
+
+***
+
+In the United States Independence Day is celebrated on.
+
+### Martin Luther King Jr. Day {data-commentary-width=500}
+
+```{r eval=TRUE, include=TRUE, echo=TRUE}
+on_mondays <- on_wday("Mon")
+in_jan <- in_month("Jan")
+
+on_mlk_day <- 
+  on_third(on_mondays, 
+           within_given = "month") %>% 
+  only_occur(in_jan) 
+
+on_mlk_day %>% 
+  schedule_days(from = 2020, to = 2025)
+```
+
+***
+
+Martin Luther King Jr. Day is a national holiday United States occuring every
+year on the **third** **Monday** in **January**.
+
+This means Martin Luther King Day is a apparently complicated schedule. But,
+if using `gs`, even apparently complicated schedules can easily be created from 
+simple building blocks.
+
+In the first section of code, we create the component schedules.
+
+### Combine holidays {data-commentary-width=500}
+
+```{r eval=TRUE, include=TRUE, echo=TRUE}
+# on_us_independence_day <- 
+#   only_occur(on_mday(4), 
+#              in_month("July"))
+# on_mlk_day <- 
+#   on_third(on_wday("Mon"), 
+#            within_given = "month") %>% 
+#   only_occur(in_month("Jan"))
+
+on_us_federal_holidays <-
+  on_us_independence_day %>% 
+  also_occur(on_mlk_day)
+
+on_us_federal_holidays %>% 
+  schedule_days(from = 2020, to = 2022)
+```
+
+*** 
+
+Here is some commentary

@@ -1,0 +1,83 @@
+---
+title: "Introducing the {gs} package"
+output: 
+  flexdashboard::flex_dashboard:
+    # orientation: columns
+    # vertical_layout: fill
+    storyboard: true
+    # theme: default
+    # source_code: embed
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+```
+<!-- About {gs}{.sidebar} -->
+<!-- =====================================  -->
+
+<!-- ### About -->
+
+<!-- Something about the {gs} pacakge... -->
+
+
+Explore
+=========================================
+
+### A nice scatterplot here {data-commentary-width=400}
+
+```{r}
+plot(cars, pch = 20)
+grid()
+```
+
+---
+
+Some commentary about Frame 1.
+
+### A beautiful histogram on this board
+
+```{r}
+hist(faithful$eruptions, col = 'gray', border = 'white', main = '')
+```
+
+---
+
+Some commentary about Frame 2.
+
+```{r}
+# library(slickR)
+
+# slickOpts=list(autoplay=TRUE)
+# 
+# # a list of images, can be on computer, just include path
+# mylist <- c(
+#   "http://lenkiefer.com/img/charts_sep_23_2019/inari.png",
+#   "http://lenkiefer.com/img/charts_2019_10_08/gganimate_ma.gif"
+# )
+
+#slickOpts=list(autoplay="true")
+
+# slickR(mylist, 
+#        slickOpts = list(autoplay = TRUE, 
+#                         autoplaySpeed = 1000,
+#                         adaptiveHeight = TRUE),
+#        height = 850,
+#        width = 1450,
+#        slideId = "num5")
+
+```
+
+<!--   .storyboard-nav .sbframelist { -->
+<!--     margin: 0 auto; -->
+<!--     width: 94%; -->
+<!--     height: 60px; -->
+<!--     overflow: hidden; -->
+<!--     text-shadow: none; -->
+<!--     margin-bottom: 8px; -->
+<!--   } -->
+<!-- .storyboard-nav .sbnext, .storyboard-nav .sbprev { -->
+<!--   float: left; -->
+<!--   width: 2%; -->
+<!--   height: 60px; -->
+<!--   font-size: 50px; -->
+<!-- } -->
