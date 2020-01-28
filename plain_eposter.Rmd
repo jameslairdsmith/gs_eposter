@@ -36,6 +36,24 @@ pre code{
   
   font-size: 18px;
 }
+
+.my-title {
+
+  font-size: 56px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.my-subtitle {
+
+  font-size: 40px;
+  text-align: center;
+}
+.my-org {
+  font-size: 40px;
+  text-align: center;
+  font-style: italic;
+}
   
 </style>
 
@@ -44,7 +62,14 @@ library(flexdashboard)
 library(gs)
 library(lubridate)
 library(magrittr)
+
+knitr::opts_chunk$set(eval=TRUE, include=TRUE, echo=TRUE)
 ```
+
+```{r include=FALSE}
+options(width=15)
+```
+
 
 About {gs}{.sidebar}
 =====================================
@@ -62,70 +87,164 @@ The `gs` grammar is both flexible and declarative. The flexibility allows users
 to compose arbitrarily complex schedules from simple and intuitive buildings 
 blocks. Because the grammar is declarative, the user need not concern 
 themselves with the details of how a particular schedule works, rather they 
-can specify what they want from a schedule and let gs implement it for them.
+can specify what they want from a schedule and let `gs` implement it for them.
 
 ### About me
 
 My name is James Laird-Smith and I am a data analyst at the Financial Times in
 London.
 
+Home
+=========================================
+
+<div class = "my-title">
+<br>
+<br>
+Introducing {gs}: <br>
+A grammar of recurring calendar events
+</div>
+<div class = "my-subtitle">
+<br>
+James Laird-Smith <br>
+<div class = "my-org">
+The Financial Times (FT)
+</div>
+</div>
+
 Simple examples {.storyboard}
 =========================================
 
-### Weekly until fixed date
-
-```{r eval=FALSE, include=TRUE, echo=TRUE}
-library(gs)
-library(lubridate)
-library(magrittr)
-```
+### Every 35 days {data-commentary-width=500}
 
 ```{r}
-options(width=15)
-```
-
-
-```{r eval=TRUE, include=TRUE, echo=TRUE}
-on_every("week", starting = ymd("1997-09-02")) %>% 
-  only_occur(before(ymd("1997-12-24"))) %>% 
-  schedule_days(during = 1997)
+on_every_nth(35, "days", starting = dmy("28/01/2020")) %>% 
+  schedule_days(during = 2020) 
 ```
 
 ***
 
-Weekly until December 24, 1997
+To schedule days in increments from a certain date, we use the `on_every_nth()`
+function. 
 
+In this case we specify:
 
-### Every other week {data-commentary-width=500}
+1. The number of increments between events is `35`
+2. The type of increment is "days"
+3. The start date is today.
 
-```{r eval=TRUE, include=TRUE, echo=TRUE}
-on_every_second("week", starting = ymd("1997-09-02")) %>% 
-  schedule_days(from = 1997, to = 1998)
+### Friday the 13th {data-commentary-width=500}
+
+```{r}
+on_fri_thirteenth <- 
+  on_wday("Fri") %>% 
+  only_occur(on_mday(13))
+
+on_fri_thirteenth %>% 
+  schedule_days(from = 2020, to = 2022)
 ```
 
 ***
 
-Every other week - forever:
+Friday the 13th can be thought of as the intersection of:
+
+1. The schedule of all Fridays, found using the `on_wday()` function. 
+2. The schedule of all 13th days of the month, using the `on_mday()` function.
+
+The intersection of these two schedules is found by passing them as arguments
+to the `also_occur()` function.
+
+
+### The Monday of the 20th week of the year {data-commentary-width=500}
+
+```{r}
+### Assuming a week starts on Monday
+
+in_isoweek_twenty <- in_isoweek(20)
+on_mondays <- on_wday("Monday")
+
+in_isoweek_twenty %>% 
+  only_occur(on_mondays) %>% 
+  schedule_days(from = 2020, to = 2025)
+```
+
+***
+
+This schedule can be created as the intersection of two schedules:
+
+1. The schedule of Mondays, created using the `on_wday()` function.
+2. The schedule of events occurring in ISO week 20, created using the 
+  `in_isoweek()` function.
+  
+The intersection of these schedules is found using the `only_occur()` function.
+
 
 Advanced examples {.storyboard}
 =========================================
 
-### Weekly on Tuesday and Thursday for five weeks:
+### Every 12th Monday, Wednesday or Friday of the year {data-commentary-width=500}
 
 ```{r eval=TRUE, include=TRUE, echo=TRUE}
-on_wday("Tue", "Thu") %>% 
-  only_occur(on_or_after(ymd("1997-09-02"))) %>% 
-  schedule_days(to = ymd("1997-09-02") + weeks(5))
+on_mon_wed_fri <- on_wday("Mon", "Wed", "Fri")
+
+on_nth(12,
+       on_mon_wed_fri, 
+       within_given = "year") %>% 
+  schedule_days(from = 2020, to = 2025)
 ```
 
-### Every other week on Monday, Wednesday, and Friday
+***
 
-```{r eval=TRUE, include=TRUE, echo=TRUE}
-in_every_second("week", starting = ymd("1997-09-01")) %>% 
-  only_occur(on_or_before(ymd("1997-12-24"))) %>% 
-  schedule_days(during = 1997)
+This is a compound schedule with the following parts:
+
+1. Days occurring on Monday, Wednesday or Friday. 
+2. The 12th occurrence of an event within a period.
+
+We can create the first schedule using the `on_wday()` function.
+
+We can then use that schedule object as an argument to the `on_nth()`
+function where we also specify that we want the 12th occurrence and that
+it should be within each given year.
+
+### Every 5th last Friday or Saturday of the month {data-commentary-width=500}
+
+```{r}
+on_fri_sat <- on_wday("Fri", "Sat")
+
+on_nth(-5,
+       on_fri_sat,
+       within_given = "month") %>% 
+  schedule_days(during = 2020)
 ```
 
+***
+
+Just like the previous example, this can be accomplished as a compound
+schedule:
+
+1. The first thing is to make the schedule of Fridays and Saturdays using the
+   `on_wday()` function.
+2. This schedule is then used as an argument to the `on_nth()` function where
+   we also specify `-5` as the first argument.
+
+The negative integer tells the `on_nth()` function to look for the *last* 
+occurrence of the event within the particular period rather than the first.
+
+### The first Saturday following the first Sunday of the month {data-commentary-width=500}
+
+```{r}
+on_first(on_wday("Sun"), within_given = "month") %>% 
+  roll_forward(to_schedule = on_wday("Sat")) %>% 
+  schedule_days(during = 2020)
+```
+
+***
+
+There are two components to the schedule:
+
+1. The first Sunday of the month, found using the `on_wday()` and `on_first()`
+   functions.
+2. The Saturday following the above schedule, found by rolling it forward using
+   the `roll_forward()` function.
 
 Holidays {.storyboard}
 =========================================
@@ -133,9 +252,12 @@ Holidays {.storyboard}
 ### U.S. Independence Day {data-commentary-width=500}
 
 ```{r eval=TRUE, include=TRUE, echo=TRUE}
+on_fourth_day_month <- on_mday(4)
+in_july <- in_month("July")
+
 on_us_independence_day <- 
-  only_occur(on_mday(4), 
-             in_month("July"))
+  only_occur(on_fourth_day_month, 
+             in_july)
 
 on_us_independence_day %>% 
   schedule_days(from = 2020, to = 2025)
@@ -143,7 +265,17 @@ on_us_independence_day %>%
 
 ***
 
-In the United States Independence Day is celebrated on.
+In the United States Independence Day is celebrated on **July 4th**, regardless
+of the year.
+
+This can be created as the intersection of two schedules:
+
+1. The schedule of days occurring in July, found using the `in_month()` 
+   function.
+2. The schedule of all days occurring on the 4th of the month, found using the
+   `on_mday()`.
+
+The intersection of these schedules is found using the `only_occur()` function.
 
 ### Martin Luther King Jr. Day {data-commentary-width=500}
 
@@ -162,26 +294,25 @@ on_mlk_day %>%
 
 ***
 
-Martin Luther King Jr. Day is a national holiday United States occuring every
+Martin Luther King Jr. Day is a national holiday United States occurring every
 year on the **third** **Monday** in **January**.
 
-This means Martin Luther King Day is a apparently complicated schedule. But,
-if using `gs`, even apparently complicated schedules can easily be created from 
-simple building blocks.
+There are three parts to this schedule:
 
-In the first section of code, we create the component schedules.
+1. Events occurring on Mondays, created using `on_wday()`.
+2. Events occurring in January, created using `in_month()`
+3. The schedule of the nth event occurring in the period, in this case 
+  `on_third()`.
+  
+The schedule of Mondays is passed into the `on_third()` function as an argument
+along with the argument specifying it should be within a given month.
+
+You can then get the desired schedule by finding the intersection of 
+the above schedule with the schedule of January days using `only_occur()`.
 
 ### Combine holidays {data-commentary-width=500}
 
 ```{r eval=TRUE, include=TRUE, echo=TRUE}
-# on_us_independence_day <- 
-#   only_occur(on_mday(4), 
-#              in_month("July"))
-# on_mlk_day <- 
-#   on_third(on_wday("Mon"), 
-#            within_given = "month") %>% 
-#   only_occur(in_month("Jan"))
-
 on_us_federal_holidays <-
   on_us_independence_day %>% 
   also_occur(on_mlk_day)
@@ -192,4 +323,12 @@ on_us_federal_holidays %>%
 
 *** 
 
-Here is some commentary
+If you want to create a schedule of multiple holidays, you can compose it using
+individual schedule objects of those holidays.
+
+In this example, we take the schedule objects we have already created for
+US Independence Day and Martin Luther King Jr. Day and combine them using the
+`also_occur()` function.
+
+This can be done any number of times to create a schedule that is arbitrarily
+complex.
