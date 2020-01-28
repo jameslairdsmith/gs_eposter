@@ -135,11 +135,14 @@ In this case we specify:
 ### Friday the 13th {data-commentary-width=500}
 
 ```{r}
-on_fri_thirteenth <- 
-  on_wday("Fri") %>% 
-  only_occur(on_mday(13))
+on_fridays <- on_wday("Fri")
+on_thirteenth <- on_mday(13)
 
-on_fri_thirteenth %>% 
+on_fri_thirteen <- 
+  on_fridays %>% 
+  only_occur(on_thirteenth)
+
+on_fri_thirteen %>% 
   schedule_days(from = 2020, to = 2022)
 ```
 
